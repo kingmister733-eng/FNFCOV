@@ -839,8 +839,14 @@ export class ModConverter {
       markdownReport,
       jsonReport,
       diagnostics: normalizedMod.diagnostics,
-      validationErrors: validation.errors,
-      validationWarnings: validation.warnings,
+      validationErrors: Array.from(new Set([
+        ...validation.errors,
+        ...diagnostics.filter((diagnostic) => diagnostic.level === 'error').map((diagnostic) => diagnostic.message),
+      ])),
+      validationWarnings: Array.from(new Set([
+        ...validation.warnings,
+        ...diagnostics.filter((diagnostic) => diagnostic.level === 'warning').map((diagnostic) => diagnostic.message),
+      ])),
       normalizedMod,
     };
   }
