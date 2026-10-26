@@ -724,8 +724,61 @@ export class ModConverter {
 
     normalizedMod.status = finalStatus;
 
-    // Step 12: Output Serialization
-    const serializedFiles = OutputSerializer.serializeToVSlice(normalizedMod);
+    // Step 12: Output Serialization + validation against the target JSON contracts.
+    let serializedFiles = OutputSerializer.serializeToVSlice(normalizedMod);
+    const outputSchemaErrors: ConversionDiagnostic[] = [];
+
+    for (const outputFile of serializedFiles) {
+      if (typeof outputFile.content !== 'string') continue;
+      const outputPath = outputFile.path.toLowerCase();
+      const isChart = outputPath.startsWith('data/songs/') && outputPath.endsWith('-chart.json');
+      const isSongMetadata = outputPath.startsWith('data/songs/') && outputPath.endsWith('-metadata.json');
+      const isCharacter = outputPath.startsWith('data/characters/') && outputPath.endsWith('.json');
+      const isStage = outputPath.startsWith('data/stages/') && outputPath.endsWith('.json');
+      if (!isChart && !isSongMetadata && !isCharacter && !isStage) continue;
+
+      let parsed: any;
+      try {
+        parsed = JSON.parse(outputFile.content);
+      } catch (error: any) {
+        outputSchemaErrors.push({
+          level: 'error',
+          category: isCharacter ? 'character' : isStage ? 'stage' : isChart ? 'chart' : 'metadata',
+          file: outputFile.path,
+          message: `Generated target JSON is invalid: ${error.message}`,
+        });
+        continue;
+      }
+
+      const validationResult = isChart
+        ? Validator.validateVSliceChart(parsed)
+        : isSongMetadata
+          ? Validator.validateVSliceMetadata(parsed)
+          : isCharacter
+            ? Validator.validateVSliceCharacter(parsed)
+            : Validator.validateVSliceStage(parsed);
+
+      for (const message of validationResult.errors) {
+        outputSchemaErrors.push({
+          level: 'error',
+          category: isCharacter ? 'character' : isStage ? 'stage' : isChart ? 'chart' : 'metadata',
+          file: outputFile.path,
+          message: `Generated V-Slice schema check failed: ${message}`,
+          actionNeeded: 'Fix the conversion or manually repair this generated file before importing the mod.',
+        });
+      }
+    }
+
+    if (outputSchemaErrors.length > 0) {
+      diagnostics.push(...outputSchemaErrors);
+      finalStatus =
+        normalizedMod.songs.size === 0 && normalizedMod.characters.size === 0
+          ? 'Failed validation'
+          : 'Partially converted';
+      normalizedMod.status = finalStatus;
+      // Regenerate the embedded report so it includes the target-schema failures.
+      serializedFiles = OutputSerializer.serializeToVSlice(normalizedMod);
+    }
 
     // Step 13: Packaging ZIP
     if (onProgress) onProgress({ step: 'Упаковка V-Slice ZIP-архива...', percent: 92 });
