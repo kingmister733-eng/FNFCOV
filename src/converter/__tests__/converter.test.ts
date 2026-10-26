@@ -273,6 +273,8 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(script.detectedFunctions).toContain('doTweenZoom');
     expect(script.generatedHScriptDraft).toBeDefined();
     expect(script.generatedHScriptDraft).toContain('import flixel.FlxSprite');
+    expect(script.compatibility).toBe('partial');
+    expect(script.issues.some((issue) => issue.includes('not automatically transpiled'))).toBe(true);
   });
 
   // Test 10: Complete mod containing multiple songs and characters
@@ -302,6 +304,19 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
       })
     );
 
+    // Add a Psych stage definition. Background props must be reviewed separately.
+    inputZip.file(
+      'stages/teststage.json',
+      JSON.stringify({
+        defaultZoom: 0.85,
+        isPixelStage: false,
+        camera_speed: 1,
+        boyfriend: [770, 450],
+        girlfriend: [400, 130],
+        opponent: [100, 100],
+      })
+    );
+
     // Add audio asset
     inputZip.file('songs/bopeebo/Inst.ogg', new Uint8Array([0x4f, 0x67, 0x67, 0x53]));
 
@@ -325,6 +340,16 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(characterJson.offsets).toEqual([0, 0]);
     expect(characterJson.animations[0].frameRate).toBe(24);
     expect(characterJson.animations[0].fps).toBeUndefined();
+
+    expect(outputZip.file('data/stages/teststage.json')).not.toBeNull();
+    const stageJson = JSON.parse(await outputZip.file('data/stages/teststage.json')!.async('string'));
+    expect(stageJson.version).toBe('1.0.1');
+    expect(stageJson.cameraZoom).toBe(0.85);
+    expect(stageJson.props).toEqual([]);
+    expect(stageJson.characters.bf.position).toEqual([770, 450]);
+    expect(stageJson.characters.dad.position).toEqual([100, 100]);
+    expect(stageJson.characters.gf.position).toEqual([400, 130]);
+    expect(stageJson.characters.boyfriend).toBeUndefined();
     expect(outputZip.file('CONVERSION_REPORT.md')).not.toBeNull();
   });
 
