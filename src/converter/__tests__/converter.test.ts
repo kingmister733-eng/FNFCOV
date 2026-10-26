@@ -340,6 +340,7 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(result.stats.songsCount).toBe(1);
     expect(result.stats.charactersCount).toBe(1);
     expect(result.zipBlob).toBeDefined();
+    expect(result.validationWarnings.some((warning) => warning.includes('not automatically transpiled'))).toBe(true);
 
     // Verify generated ZIP content structure
     const outputZip = await JSZip.loadAsync(result.zipBlob!);
