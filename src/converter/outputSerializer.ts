@@ -82,7 +82,7 @@ export class OutputSerializer {
       };
 
       files.push({
-        path: `data/songs/${songId}/${songId}-chart.json`,
+        path: `songs/${songId}/${songId}-chart.json`,
         content: JSON.stringify(vSliceChart, null, 2),
       });
 
@@ -142,7 +142,7 @@ export class OutputSerializer {
       };
 
       files.push({
-        path: `data/songs/${songId}/${songId}-metadata.json`,
+        path: `songs/${songId}/${songId}-metadata.json`,
         content: JSON.stringify(vSliceMetadata, null, 2),
       });
     }
