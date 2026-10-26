@@ -171,6 +171,11 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(notes[0].noteType).toBe('Hurt Note');
     expect(notes[1].altAnim).toBe(true);
     expect(notes[2].noteType).toBe('Warning Note');
+    expect(
+      diagnostics.some(
+        (d) => d.level === 'warning' && d.message.includes('Alt-animation behavior was detected')
+      )
+    ).toBe(true);
   });
 
   // Test 6: Song with events
