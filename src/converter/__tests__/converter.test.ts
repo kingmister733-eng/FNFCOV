@@ -333,6 +333,9 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(outputZip.file('_polymod_meta.json')).not.toBeNull();
     expect(outputZip.file('data/songs/bopeebo/bopeebo-chart.json')).not.toBeNull();
     expect(outputZip.file('data/songs/bopeebo/bopeebo-metadata.json')).not.toBeNull();
+    const songMetadata = JSON.parse(await outputZip.file('data/songs/bopeebo/bopeebo-metadata.json')!.async('string'));
+    expect(songMetadata.version).toBe('2.2.4');
+    expect(songMetadata.generatedBy).toContain('FNFCOV');
     expect(outputZip.file('data/characters/bf.json')).not.toBeNull();
     const characterJson = JSON.parse(await outputZip.file('data/characters/bf.json')!.async('string'));
     expect(characterJson.version).toBe('1.0.2');
