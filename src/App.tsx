@@ -511,21 +511,21 @@ export function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-pink-500 selection:text-white">
       {/* Top Header & Cover Bar */}
-      <header className="w-full bg-slate-950/90 border-b border-slate-800/80 backdrop-blur-md px-4 py-3 sticky top-0 z-40">
+      <header className="w-full bg-slate-950/90 border-b border-slate-800/80 backdrop-blur-xl px-4 py-3 sticky top-0 z-40 shadow-lg shadow-indigo-950/20">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & Tag */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-600 via-purple-600 to-cyan-400 p-0.5 shadow-lg shadow-pink-500/20 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-500 to-blue-500 p-0.5 shadow-lg shadow-indigo-500/20 flex items-center justify-center">
               <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center text-lg">
                 🎤
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg md:text-xl font-black font-bungee tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-cyan-400">
+                <h1 className="text-lg md:text-xl font-black font-bungee tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-indigo-200 to-blue-300">
                   FNFCOV
                 </h1>
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-black bg-pink-500/20 text-pink-400 border border-pink-500/30">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md font-bold tracking-widest bg-violet-500/10 text-violet-200 border border-violet-400/25">
                   COVER ENGINE
                 </span>
               </div>
@@ -556,7 +556,7 @@ export function App() {
             {/* Psych <-> V-Slice Converter Main Button */}
             <button
               onClick={() => setIsConverterOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-black text-xs tracking-wider uppercase shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-105 active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs tracking-wider uppercase shadow-lg shadow-indigo-950/40 transition-all transform hover:scale-105 active:scale-95"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Конвертер</span>
@@ -565,7 +565,7 @@ export function App() {
             {/* Cover Studio Button */}
             <button
               onClick={() => setIsStudioOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold text-xs tracking-wider uppercase shadow-md transition-all transform hover:scale-105 active:scale-95"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-700 to-indigo-700 hover:from-violet-600 hover:to-indigo-600 text-white font-bold text-xs tracking-wider uppercase shadow-md shadow-indigo-950/40 transition-all transform hover:scale-105 active:scale-95"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Studio</span>
@@ -595,9 +595,9 @@ export function App() {
       {/* Main Play Area */}
       <main className="flex-1 max-w-5xl mx-auto w-full px-3 md:px-6 py-3 flex flex-col justify-between gap-3">
         {/* Quick Android Converter Banner */}
-        <div className="w-full bg-gradient-to-r from-cyan-950/70 via-slate-900 to-purple-950/70 border border-cyan-500/30 p-2.5 sm:p-3 rounded-2xl flex items-center justify-between gap-3 shadow-md">
+        <div className="w-full bg-gradient-to-r from-indigo-950/80 via-slate-900 to-violet-950/70 border border-indigo-400/20 p-3 sm:p-4 rounded-2xl flex items-center justify-between gap-3 shadow-lg shadow-indigo-950/20">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+            <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-200 border border-indigo-400/25">
               <FolderArchive className="w-4 h-4" />
             </div>
             <div>
@@ -615,7 +615,7 @@ export function App() {
 
           <button
             onClick={() => setIsConverterOpen(true)}
-            className="whitespace-nowrap px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow transition-transform hover:scale-105 active:scale-95"
+            className="whitespace-nowrap px-3.5 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-indigo-950/40 transition-transform hover:scale-[1.02] active:scale-95"
           >
             Открыть Конвертер
           </button>
@@ -655,7 +655,7 @@ export function App() {
         />
 
         {/* Bottom Playback & Control Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/60 border border-slate-800 p-3 rounded-2xl shadow-xl">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/60 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-xl shadow-black/20">
           {/* Play/Pause & Reset */}
           <div className="flex items-center gap-2">
             <button
@@ -663,7 +663,7 @@ export function App() {
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm tracking-wider uppercase transition-all shadow-lg ${
                 isPlaying
                   ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
-                  : 'bg-gradient-to-r from-pink-500 to-cyan-500 hover:from-pink-400 hover:to-cyan-400 text-slate-950 shadow-pink-500/25'
+                  : 'bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white shadow-indigo-500/20'
               }`}
             >
               {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
@@ -687,7 +687,7 @@ export function App() {
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-pink-500 to-cyan-400 transition-all duration-100"
+                className="h-full bg-gradient-to-r from-indigo-500 to-violet-400 transition-all duration-100"
                 style={{ width: `${Math.min(100, (songTime / currentSong.durationMs) * 100)}%` }}
               />
             </div>
@@ -697,13 +697,13 @@ export function App() {
           <div className="flex items-center gap-1.5">
             <button
               onMouseDown={() => handleTouchArrow(0)}
-              className="w-10 h-10 rounded-xl bg-pink-500/20 border border-pink-500/50 hover:bg-pink-500/40 text-pink-400 font-black text-xs active:scale-95 transition-all flex items-center justify-center shadow"
+              className="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-400/30 hover:bg-violet-500/30 text-violet-200 font-black text-xs active:scale-95 transition-all flex items-center justify-center shadow"
             >
               ⬅️
             </button>
             <button
               onMouseDown={() => handleTouchArrow(1)}
-              className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/50 hover:bg-cyan-500/40 text-cyan-400 font-black text-xs active:scale-95 transition-all flex items-center justify-center shadow"
+              className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-400/30 hover:bg-indigo-500/30 text-indigo-200 font-black text-xs active:scale-95 transition-all flex items-center justify-center shadow"
             >
               ⬇️
             </button>
