@@ -144,6 +144,9 @@ export class Validator {
     if (!metaObj.songName) {
       errors.push('Missing "songName" in V-Slice metadata.');
     }
+    if (typeof metaObj.generatedBy !== 'string' || metaObj.generatedBy.trim() === '') {
+      errors.push('Missing "generatedBy" in V-Slice metadata.');
+    }
     if (!metaObj.playData || typeof metaObj.playData !== 'object') {
       errors.push('Missing "playData" object in V-Slice metadata.');
     }
@@ -155,5 +158,61 @@ export class Validator {
       valid: errors.length === 0,
       errors,
     };
+  }
+
+  /** Validates the required fields used by the official V-Slice CharacterData parser. */
+  public static validateVSliceCharacter(character: any): { valid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    if (!character || typeof character !== 'object') {
+      return { valid: false, errors: ['Character JSON root is not an object.'] };
+    }
+    if (typeof character.version !== 'string' || !character.version.startsWith('1.0.')) {
+      errors.push(`Character data version should be in the 1.0.x range, found "${character.version}".`);
+    }
+    if (!character.name) errors.push('Missing "name" in V-Slice character data.');
+    if (!character.assetPath) errors.push('Missing "assetPath" in V-Slice character data.');
+    if (!Array.isArray(character.animations) || character.animations.length === 0) {
+      errors.push('V-Slice character data requires at least one animation.');
+    } else {
+      character.animations.forEach((animation: any, index: number) => {
+        if (!animation?.name) errors.push(`Character animation ${index} is missing "name".`);
+        if (!animation?.prefix) errors.push(`Character animation ${index} is missing "prefix".`);
+      });
+    }
+    if (!Array.isArray(character.offsets) || character.offsets.length < 2) {
+      errors.push('Character "offsets" must be a two-number array.');
+    }
+    if (!Array.isArray(character.cameraOffsets) || character.cameraOffsets.length < 2) {
+      errors.push('Character "cameraOffsets" must be a two-number array.');
+    }
+    return { valid: errors.length === 0, errors };
+  }
+
+  /** Validates the required fields used by the official V-Slice StageData parser. */
+  public static validateVSliceStage(stage: any): { valid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    if (!stage || typeof stage !== 'object') {
+      return { valid: false, errors: ['Stage JSON root is not an object.'] };
+    }
+    if (typeof stage.version !== 'string' || !stage.version.startsWith('1.0.')) {
+      errors.push(`Stage data version should be in the 1.0.x range, found "${stage.version}".`);
+    }
+    if (!stage.name) errors.push('Missing "name" in V-Slice stage data.');
+    if (!Array.isArray(stage.props)) errors.push('V-Slice stage data requires a "props" array.');
+    if (!stage.characters || typeof stage.characters !== 'object') {
+      errors.push('Missing "characters" object in V-Slice stage data.');
+    } else {
+      for (const characterId of ['bf', 'dad', 'gf']) {
+        const character = stage.characters[characterId];
+        if (!character) {
+          errors.push(`Missing "${characterId}" entry in stage characters.`);
+          continue;
+        }
+        if (!Array.isArray(character.position) || character.position.length < 2) {
+          errors.push(`Stage character "${characterId}" requires a two-number position array.`);
+        }
+      }
+    }
+    return { valid: errors.length === 0, errors };
   }
 }
