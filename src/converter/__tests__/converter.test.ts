@@ -310,8 +310,8 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     // Verify generated ZIP content structure
     const outputZip = await JSZip.loadAsync(result.zipBlob!);
     expect(outputZip.file('_polymod_meta.json')).not.toBeNull();
-    expect(outputZip.file('data/songs/bopeebo/bopeebo-chart.json')).not.toBeNull();
-    expect(outputZip.file('data/songs/bopeebo/bopeebo-metadata.json')).not.toBeNull();
+    expect(outputZip.file('songs/bopeebo/bopeebo-chart.json')).not.toBeNull();
+    expect(outputZip.file('songs/bopeebo/bopeebo-metadata.json')).not.toBeNull();
     expect(outputZip.file('data/characters/bf.json')).not.toBeNull();
     expect(outputZip.file('CONVERSION_REPORT.md')).not.toBeNull();
   });
@@ -562,16 +562,16 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(polymodMeta.title).toBe('BopeeboTest');
 
     // Chart schema
-    expect(outputFiles.has('data/songs/bopeebo/bopeebo-chart.json')).toBe(true);
-    const chart = JSON.parse(outputFiles.get('data/songs/bopeebo/bopeebo-chart.json')!.text!);
+    expect(outputFiles.has('songs/bopeebo/bopeebo-chart.json')).toBe(true);
+    const chart = JSON.parse(outputFiles.get('songs/bopeebo/bopeebo-chart.json')!.text!);
     expect(chart.version).toBe('2.0.0');
     expect(chart.scrollSpeed).toHaveProperty('default');
     expect(chart.notes).toHaveProperty('normal');
     expect(chart.events).toBeInstanceOf(Array);
 
     // Metadata schema
-    expect(outputFiles.has('data/songs/bopeebo/bopeebo-metadata.json')).toBe(true);
-    const meta = JSON.parse(outputFiles.get('data/songs/bopeebo/bopeebo-metadata.json')!.text!);
+    expect(outputFiles.has('songs/bopeebo/bopeebo-metadata.json')).toBe(true);
+    const meta = JSON.parse(outputFiles.get('songs/bopeebo/bopeebo-metadata.json')!.text!);
     expect(meta.version).toBe('2.2.4');
     expect(meta.songName).toBe('Bopeebo');
     expect(meta.playData.characters.player).toBe('bf');
