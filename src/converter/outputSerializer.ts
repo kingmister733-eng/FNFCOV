@@ -144,25 +144,28 @@ export class OutputSerializer {
         : `characters/${char.assetPath}`;
 
       const vChar = {
-        version: '1.0.0',
+        // Official V-Slice CharacterData schema (current 1.0.x format).
+        version: '1.0.2',
         name: char.name,
-        assetPath: cleanAssetPath,
         renderType: char.renderType,
+        assetPath: cleanAssetPath,
         scale: char.scale,
-        singDuration: char.singDuration,
-        flipX: char.flipX,
         healthIcon: {
           id: char.healthIcon,
           scale: 1.0,
           flipX: false,
         },
-        healthBarColor: char.healthBarColor,
-        positionOffsets: char.positionOffsets,
+        offsets: char.positionOffsets,
         cameraOffsets: char.cameraOffsets,
+        singTime: char.singDuration,
+        startingAnimation: 'idle',
+        flipX: char.flipX,
+        isPixel: false,
+        danceEvery: 1.0,
         animations: char.animations.map((a) => ({
           name: a.name,
           prefix: a.prefix,
-          fps: a.fps,
+          frameRate: a.fps,
           looped: a.loop,
           frameIndices: a.frameIndices,
           offsets: a.offsets,
@@ -178,22 +181,32 @@ export class OutputSerializer {
     // 4. Stages
     for (const [stageId, stage] of mod.stages) {
       const vStage = {
-        version: '1.0.0',
+        // Official V-Slice StageData uses cameraZoom, props, and bf/dad/gf.
+        version: '1.0.1',
         name: stage.name,
-        defaultZoom: stage.defaultZoom,
-        isPixel: stage.isPixel,
-        cameraSpeed: stage.cameraSpeed,
+        cameraZoom: stage.defaultZoom,
+        props: stage.layers.map((layer) => ({
+          name: layer.name,
+          assetPath: layer.assetPath.replace(/^images\\//i, ''),
+          zIndex: layer.zIndex,
+          position: layer.position,
+          scale: layer.scale,
+          scroll: layer.scrollFactor,
+          isPixel: stage.isPixel,
+        })),
         characters: {
-          boyfriend: {
+          bf: {
+            zIndex: 300,
             position: stage.characters.boyfriend.position,
             cameraOffsets: stage.characters.boyfriend.cameraOffsets,
           },
-          girlfriend: {
+          gf: {
+            zIndex: 100,
             position: stage.characters.girlfriend.position,
             cameraOffsets: stage.characters.girlfriend.cameraOffsets,
-            hidden: stage.characters.girlfriend.hidden,
           },
-          opponent: {
+          dad: {
+            zIndex: 200,
             position: stage.characters.opponent.position,
             cameraOffsets: stage.characters.opponent.cameraOffsets,
           },
