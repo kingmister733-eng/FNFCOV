@@ -486,6 +486,18 @@ export class SchemaParser {
 
     notes.sort((a, b) => a.timeMs - b.timeMs);
 
+    // V-Slice's standard chart note serializer does not currently preserve Psych's
+    // section-level altAnim flag. Report it explicitly instead of silently losing it.
+    if (notes.some((note) => note.altAnim)) {
+      diagnostics.push({
+        level: 'warning',
+        category: 'chart',
+        file: filePath,
+        message: `Alt-animation behavior was detected in "${songName}", but FNFCOV does not yet serialize this Psych behavior into the V-Slice chart. Review affected notes and port the behavior manually.`,
+        actionNeeded: 'Manually map alternate singing animations to a V-Slice-compatible note type or scripted event.',
+      });
+    }
+
     // Deduplicate notes that land on the exact same millisecond and lane
     const uniqueNotes: NormalizedNote[] = [];
     let duplicates = 0;
