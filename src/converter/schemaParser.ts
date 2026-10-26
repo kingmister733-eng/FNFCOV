@@ -716,6 +716,17 @@ export class SchemaParser {
       layers: [],
     };
 
+    // Psych stage JSON stores character positions, but stage props are commonly
+    // created by stage Lua/HScript. They are not represented in this JSON, so
+    // never imply that the background scene was fully converted from this file alone.
+    diagnostics.push({
+      level: 'warning',
+      category: 'stage',
+      file: filePath,
+      message: `Psych stage "${stageId}" positions were parsed, but stage props/background objects are not present in the JSON and need conversion from the stage script/assets.`,
+      actionNeeded: 'Review the generated V-Slice stage and manually port stage Lua/HScript objects into data/stages JSON props or a V-Slice stage script.',
+    });
+
     return { stage, diagnostics };
   }
 
