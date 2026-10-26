@@ -181,30 +181,35 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
         bpm: 140,
         notes: [],
         events: [
-          [1000, [['Camera Follow Pos', '1', '']]],
-          [2000, [['Add Camera Zoom', '0.08', '']]],
-          [3000, [['Play Animation', 'singUP', 'dad']]],
+          [1000, [['Camera Follow Pos', '150', '200']]],
+          [1500, [['Camera Follow Pos', '', '']]],
+          [2500, [['Add Camera Zoom', '0.08', '']]],
+          [3500, [['Play Animation', 'singUP', 'dad']]],
         ],
       },
     });
 
     const { song, diagnostics } = SchemaParser.parsePsychChart(psychChart, 'normal');
-    expect(song!.events.length).toBe(3);
+    expect(song!.events.length).toBe(4);
     expect(diagnostics.some((d) => d.level === 'warning' && d.message.includes('no verified V-Slice equivalent'))).toBe(true);
 
     expect(song!.events[0].name).toBe('FocusCamera');
-    expect(song!.events[0].parameters.char).toBe(1);
+    expect(song!.events[0].parameters).toEqual({ char: -1, x: 150, y: 200 });
+
+    // Empty Psych coordinates reset automatic follow and are not a character target.
+    expect(song!.events[1].name).toBe('Camera Follow Pos');
+    expect(song!.events[1].supportStatus).toBe('unsupported');
 
     // Psych's Add Camera Zoom has no verified equivalent in the official
     // V-Slice event registry; preserve it as unsupported instead of inventing an ID.
-    expect(song!.events[1].name).toBe('Add Camera Zoom');
-    expect(song!.events[1].supportStatus).toBe('unsupported');
-    expect(song!.events[1].rawValues).toEqual(['0.08', '']);
+    expect(song!.events[2].name).toBe('Add Camera Zoom');
+    expect(song!.events[2].supportStatus).toBe('unsupported');
+    expect(song!.events[2].rawValues).toEqual(['0.08', '']);
 
-    expect(song!.events[2].name).toBe('PlayAnimation');
-    expect(song!.events[2].parameters.anim).toBe('singUP');
-    expect(song!.events[2].parameters.target).toBe('opponent');
-    expect(song!.events[2].parameters.force).toBe(true);
+    expect(song!.events[3].name).toBe('PlayAnimation');
+    expect(song!.events[3].parameters.anim).toBe('singUP');
+    expect(song!.events[3].parameters.target).toBe('opponent');
+    expect(song!.events[3].parameters.force).toBe(true);
   });
 
   // Test 7: Custom character with multiple animations
