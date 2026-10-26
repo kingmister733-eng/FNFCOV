@@ -193,11 +193,16 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(song!.events[0].name).toBe('FocusCamera');
     expect(song!.events[0].parameters.char).toBe(1);
 
-    expect(song!.events[1].name).toBe('ZoomCamera');
-    expect(song!.events[1].parameters.zoom).toBe(0.08);
+    // Psych's Add Camera Zoom has no verified equivalent in the official
+    // V-Slice event registry; preserve it as unsupported instead of inventing an ID.
+    expect(song!.events[1].name).toBe('Add Camera Zoom');
+    expect(song!.events[1].supportStatus).toBe('unsupported');
+    expect(song!.events[1].rawValues).toEqual(['0.08', '']);
 
     expect(song!.events[2].name).toBe('PlayAnimation');
     expect(song!.events[2].parameters.anim).toBe('singUP');
+    expect(song!.events[2].parameters.target).toBe('opponent');
+    expect(song!.events[2].parameters.force).toBe(true);
   });
 
   // Test 7: Custom character with multiple animations
