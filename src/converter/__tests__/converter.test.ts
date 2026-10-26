@@ -243,7 +243,7 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
       hide_girlfriend: true,
     });
 
-    const { stage } = SchemaParser.parsePsychStage(psychStage, 'mainStage');
+    const { stage, diagnostics } = SchemaParser.parsePsychStage(psychStage, 'mainStage');
     expect(stage).toBeDefined();
     expect(stage!.defaultZoom).toBe(0.85);
     expect(stage!.characters.boyfriend.position).toEqual([770, 450]);
