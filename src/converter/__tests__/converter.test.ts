@@ -577,6 +577,9 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(meta.playData.characters.player).toBe('bf');
     expect(meta.playData.stage).toBe('stage');
     expect(meta.timeChanges[0].bpm).toBe(100);
+    expect(meta.generatedBy).toBe('FNFCOV Psych-to-V-Slice Mod Converter');
+    expect(meta.offsets.instrumental).toBe(0);
+    expect(meta.playData.songVariations).toEqual([]);
   });
 
   // Test 19: Exhaustive lane mapping tests for all lanes and both mustHitSection values
