@@ -248,6 +248,7 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(stage!.defaultZoom).toBe(0.85);
     expect(stage!.characters.boyfriend.position).toEqual([770, 450]);
     expect(stage!.characters.girlfriend.hidden).toBe(true);
+    expect(diagnostics.some((d) => d.level === 'warning' && d.category === 'stage')).toBe(true);
   });
 
   // Test 9: Mod with Lua scripts
@@ -318,6 +319,12 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(outputZip.file('data/songs/bopeebo/bopeebo-chart.json')).not.toBeNull();
     expect(outputZip.file('data/songs/bopeebo/bopeebo-metadata.json')).not.toBeNull();
     expect(outputZip.file('data/characters/bf.json')).not.toBeNull();
+    const characterJson = JSON.parse(await outputZip.file('data/characters/bf.json')!.async('string'));
+    expect(characterJson.version).toBe('1.0.2');
+    expect(characterJson.singTime).toBe(4);
+    expect(characterJson.offsets).toEqual([0, 0]);
+    expect(characterJson.animations[0].frameRate).toBe(24);
+    expect(characterJson.animations[0].fps).toBeUndefined();
     expect(outputZip.file('CONVERSION_REPORT.md')).not.toBeNull();
   });
 
