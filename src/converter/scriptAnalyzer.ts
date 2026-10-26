@@ -112,6 +112,15 @@ export class ScriptAnalyzer {
       if (compatibility !== 'manual') compatibility = 'partial';
     }
 
+    // This tool analyzes Psych Lua; it does not transpile Lua function bodies.
+    // A generated HScript file is a skeleton with the original source in comments,
+    // so scripts with executable callbacks/functions must never be marked automatic.
+    const hasPsychLogic = detectedCallbacks.length > 0 || detectedFunctions.length > 0;
+    if (hasPsychLogic) {
+      issues.push('Psych Lua function bodies are not automatically transpiled; the generated HScript is a review skeleton, not a working replacement.');
+      if (compatibility !== 'manual') compatibility = 'partial';
+    }
+
     if (detectedCallbacks.length === 0 && detectedFunctions.length === 0) {
       // Very simple or empty script
       compatibility = 'automatic';
@@ -134,7 +143,7 @@ export class ScriptAnalyzer {
     );
 
     diagnostics.push({
-      level: compatibility === 'manual' ? 'warning' : 'info',
+      level: compatibility === 'automatic' ? 'info' : 'warning',
       category: 'script',
       file: scriptPath,
       message: `Script "${fileName}" analyzed: ${compatibility.toUpperCase()} compatibility.`,
