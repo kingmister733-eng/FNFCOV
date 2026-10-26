@@ -821,4 +821,24 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(result.diagnostics.some((d) => d.message.includes('Standalone songpack detected'))).toBe(true);
     expect(result.diagnostics.some((d) => d.message.includes('default V-Slice stage'))).toBe(true);
   });
+  // Test 24: JSON assets under data/ are not all charts
+  it('24. Preserves non-chart JSON inside a song data folder without parsing it as a song', async () => {
+    const pack = new JSZip();
+    pack.file('data/test-song/test-song.json', JSON.stringify({
+      song: { song: 'test-song', bpm: 120, notes: [{ sectionNotes: [], mustHitSection: true }] },
+    }));
+    pack.file('data/test-song/metadata-custom.json', JSON.stringify({
+      title: 'Custom metadata',
+      credits: ['artist'],
+    }));
+
+    const buffer = await pack.generateAsync({ type: 'uint8array' });
+    const result = await ModConverter.convertPsychModZip(buffer, 'JsonClassificationTest.zip', '0.8.x');
+    const { files: outputFiles } = await SafeZip.unpackZip(result.zipBlob!);
+
+    expect(result.stats.songsCount).toBe(1);
+    expect(outputFiles.has('data/test-song/metadata-custom.json')).toBe(true);
+    expect(JSON.parse(outputFiles.get('data/test-song/metadata-custom.json')!.text!).title).toBe('Custom metadata');
+  });
+
 });
