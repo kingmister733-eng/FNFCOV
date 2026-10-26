@@ -79,7 +79,7 @@
 .border-cyan-500, .border-cyan-500\/30, .border-cyan-500\/40 { border-color: rgba(129, 140, 248, .4) !important; }
 .bg-cyan-500 { background-color: #6366f1 !important; }
 .bg-cyan-500\/20 { background-color: rgba(99, 102, 241, .18) !important; }
-.hover\\:bg-cyan-400:hover { background-color: #818cf8 !important; }
+[class~="hover:bg-cyan-400"]:hover { background-color: #818cf8 !important; }
 .shadow-pink-500\/20, .shadow-pink-500\/25, .shadow-cyan-500\/20 { --tw-shadow-color: rgba(99, 102, 241, .16) !important; }
 ::-webkit-scrollbar { width: 7px; height: 7px; }
 ::-webkit-scrollbar-track { background: #090d1b; }
