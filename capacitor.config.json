@@ -1,0 +1,8 @@
+{
+  "appId": "com.fnfcov.converter",
+  "appName": "FNFCOV",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
