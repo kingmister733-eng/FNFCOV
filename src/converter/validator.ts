@@ -67,21 +67,45 @@ export class Validator {
         warnings.push(`Song "${song.name}" references custom opponent character "${song.characters.opponent}" which was not found in characters/ folder.`);
       }
 
-      // Check audio existence in mod assets
-      const hasInst = Array.from(mod.assetFiles.keys()).some((k) => k.toLowerCase().includes('inst'));
-      if (!hasInst) {
-        warnings.push(`No "Inst.ogg" instrumental track found for song "${song.name}". Make sure to provide audio files.`);
+      // Check audio for THIS song, not any unrelated song in the archive.
+      const songKey = songId.toLowerCase().replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+      const audioPaths = Array.from(mod.assetFiles.keys()).map((key) =>
+        key.toLowerCase().replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')
+      ).filter((key) => /\.(ogg|mp3|wav|mp4|m4a)$/i.test(key));
+      const hasSongInst = audioPaths.some((key) => {
+        const baseName = key.split('/').pop() || '';
+        const isInstrumentalName = /^(inst|instrumental)(?:[-_.].*)?\.(ogg|mp3|wav|mp4|m4a)$/i.test(baseName);
+        const isSongScoped = key.includes(`/songs/${songKey}/`) ||
+          key.startsWith(`songs/${songKey}/`) ||
+          key.includes(`/data/${songKey}/`) ||
+          key.startsWith(`data/${songKey}/`) ||
+          baseName.startsWith(`${songKey}-inst.`) ||
+          baseName.startsWith(`${songKey}_inst.`);
+        return isInstrumentalName && isSongScoped;
+      });
+      if (!hasSongInst) {
+        warnings.push(`No song-specific instrumental track found for "${song.name}" (${songId}). Check the source mod's audio layout.`);
       }
     }
 
     // Check character asset references (PNG and XML)
     for (const [charId, char] of mod.characters) {
-      const assetBase = char.assetPath.replace(/^characters\//, '').toLowerCase();
-      const hasPng = Array.from(mod.assetFiles.keys()).some(
-        (k) => k.toLowerCase().includes(assetBase) && k.endsWith('.png')
+      const assetBase = char.assetPath.replace(/^characters\//i, '').replace(/\.(png|xml)$/i, '').replace(/^\/+|\/+$/g, '').toLowerCase();
+      const assetPaths = Array.from(mod.assetFiles.keys()).map((key) =>
+        key.toLowerCase().replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')
       );
-      const hasXml = Array.from(mod.assetFiles.keys()).some(
-        (k) => k.toLowerCase().includes(assetBase) && k.endsWith('.xml')
+      // Match the complete asset stem at a path boundary to avoid false positives.
+      const hasPng = assetPaths.some((key) =>
+        key === `characters/${assetBase}.png` ||
+        key === `images/characters/${assetBase}.png` ||
+        key.endsWith(`/${assetBase}.png`) ||
+        key === `${assetBase}.png`
+      );
+      const hasXml = assetPaths.some((key) =>
+        key === `characters/${assetBase}.xml` ||
+        key === `images/characters/${assetBase}.xml` ||
+        key.endsWith(`/${assetBase}.xml`) ||
+        key === `${assetBase}.xml`
       );
 
       if (!hasPng) {
