@@ -180,7 +180,7 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
         bpm: 140,
         notes: [],
         events: [
-          [1000, [['Camera Follow Pos', '1', '']]],
+          [1000, [['Camera Follow Pos', '120', '80']]],
           [2000, [['Add Camera Zoom', '0.08', '']]],
           [3000, [['Play Animation', 'singUP', 'dad']]],
         ],
@@ -191,13 +191,18 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(song!.events.length).toBe(3);
 
     expect(song!.events[0].name).toBe('FocusCamera');
-    expect(song!.events[0].parameters.char).toBe(1);
+    expect(song!.events[0].parameters).toMatchObject({ char: -1, x: 120, y: 80 });
+    expect(song!.events[0].supportStatus).toBe('mapped');
 
-    expect(song!.events[1].name).toBe('ZoomCamera');
-    expect(song!.events[1].parameters.zoom).toBe(0.08);
+    // ZoomCamera is not a registered official V-Slice event ID; preserve it as unsupported.
+    expect(song!.events[1].name).toBe('Add Camera Zoom');
+    expect(song!.events[1].supportStatus).toBe('unsupported');
+    expect(song!.events[1].rawValues).toEqual(['0.08', '']);
 
     expect(song!.events[2].name).toBe('PlayAnimation');
     expect(song!.events[2].parameters.anim).toBe('singUP');
+    expect(song!.events[2].parameters.target).toBe('dad');
+    expect(song!.events[2].parameters.force).toBe(true);
   });
 
   // Test 7: Custom character with multiple animations
