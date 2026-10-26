@@ -522,10 +522,13 @@ export class ModConverter {
             sourcePath: path,
             classifiedType: 'stage',
             parsingResult: 'success',
-            conversionResult: 'converted',
+            conversionResult: stage.layers.length > 0 ? 'converted' : 'skipped',
             outputPath: `data/stages/${stageId}.json`,
-            warnings: [],
-            errors: [],
+            warnings: stageDiags.filter((d) => d.level === 'warning').map((d) => d.message),
+            errors: stageDiags.filter((d) => d.level === 'error').map((d) => d.message),
+            reasonForSkipping: stage.layers.length === 0
+              ? 'Only stage positions were converted; Psych Lua visuals/background props still require manual porting.'
+              : undefined,
           });
         }
       } else if (path.toLowerCase().endsWith('.lua')) {
@@ -545,20 +548,23 @@ export class ModConverter {
             layers: [],
           };
           normalizedMod.stages.set(stageId, defaultStage);
+          const stageWarning = `Lua-only stage "${stageId}" was reduced to character-position defaults; visual sprites, animations, shaders, and camera logic were not ported automatically.`;
           diagnostics.push({
-            level: 'info',
+            level: 'warning',
             category: 'stage',
             file: path,
-            message: `Created V-Slice stage definition for Lua-only stage "${stageId}".`,
+            message: stageWarning,
+            actionNeeded: 'Manually port the stage Lua visuals and behavior into V-Slice stage props and/or a compatible V-Slice stage script.',
           });
           fileManifest.push({
             sourcePath: path,
             classifiedType: 'stage',
             parsingResult: 'repaired',
-            conversionResult: 'converted',
+            conversionResult: 'skipped',
             outputPath: `data/stages/${stageId}.json`,
-            warnings: ['Stage relies on Lua script for visuals; generated baseline stage anchors.'],
+            warnings: [stageWarning],
             errors: [],
+            reasonForSkipping: 'Stage Lua behavior is not transpiled into V-Slice stage behavior.',
           });
         }
       }
