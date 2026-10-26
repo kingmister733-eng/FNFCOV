@@ -165,8 +165,9 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
       },
     });
 
-    const { song } = SchemaParser.parsePsychChart(psychChart, 'normal');
+    const { song, diagnostics } = SchemaParser.parsePsychChart(psychChart, 'normal');
     const notes = song!.notes.normal;
+    expect(diagnostics.some((d) => d.level === 'warning' && d.message.includes('Psych note types'))).toBe(true);
     expect(notes[0].noteType).toBe('Hurt Note');
     expect(notes[1].altAnim).toBe(true);
     expect(notes[2].noteType).toBe('Warning Note');
@@ -187,8 +188,9 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
       },
     });
 
-    const { song } = SchemaParser.parsePsychChart(psychChart, 'normal');
+    const { song, diagnostics } = SchemaParser.parsePsychChart(psychChart, 'normal');
     expect(song!.events.length).toBe(3);
+    expect(diagnostics.some((d) => d.level === 'warning' && d.message.includes('no verified V-Slice equivalent'))).toBe(true);
 
     expect(song!.events[0].name).toBe('FocusCamera');
     expect(song!.events[0].parameters.char).toBe(1);
