@@ -611,15 +611,33 @@ export class ModConverter {
       diagnostics.push(...scriptDiags);
       normalizedMod.scripts.set(path, script);
 
+      // Keep the original Lua byte-for-byte in a non-executable report folder.
+      // The generated HScript is only a review skeleton, not a transpiled replacement.
+      const sourceRelativePath = path.replace(/^mods\/[^/]+\//i, '');
+      const preservedSourcePath = `CONVERSION_REPORT/psych-source/${sourceRelativePath}`;
+      normalizedMod.assetFiles.set(preservedSourcePath, file.data);
+      diagnostics.push({
+        level: 'info',
+        category: 'script',
+        file: path,
+        message: `Original Psych Lua source preserved at "${preservedSourcePath}".`,
+      });
+
+      const generatedDraftPath = `scripts/${script.name.replace(/\.[^.]+$/, '')}.hscript`;
       fileManifest.push({
         sourcePath: path,
         classifiedType: 'script',
         parsingResult: 'success',
-        conversionResult: script.compatibility === 'manual' ? 'skipped' : 'converted',
-        outputPath: `scripts/${script.name.replace(/\.[^.]+$/, '')}.hscript`,
+        conversionResult: script.compatibility === 'automatic' ? 'converted' : 'skipped',
+        outputPath: generatedDraftPath,
         warnings: script.issues,
         errors: [],
-        reasonForSkipping: script.compatibility === 'manual' ? 'Requires manual HScript/Haxe adaptation (unsupported Lua shaders/FFI)' : undefined,
+        reasonForSkipping:
+          script.compatibility === 'manual'
+            ? 'Requires manual HScript/Haxe adaptation (unsupported Lua shaders/FFI)'
+            : script.compatibility === 'partial'
+              ? 'Generated HScript is a review skeleton; Psych Lua logic was not transpiled'
+              : undefined,
       });
     }
 
