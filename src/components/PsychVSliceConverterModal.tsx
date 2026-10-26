@@ -254,25 +254,29 @@ export const PsychVSliceConverterModal: React.FC<PsychVSliceConverterModalProps>
     const { character, diagnostics } = SchemaParser.parsePsychCharacter(val, 'custom_char');
     if (character) {
       const vChar = {
-        version: '1.0.0',
+        version: '1.0.2',
         name: character.name,
-        assetPath: `characters/${character.assetPath}`,
+        assetPath: character.assetPath.startsWith('characters/')
+          ? character.assetPath
+          : `characters/${character.assetPath}`,
         renderType: character.renderType,
         scale: character.scale,
-        singDuration: character.singDuration,
+        singTime: character.singDuration,
+        startingAnimation: 'idle',
         flipX: character.flipX,
+        isPixel: false,
+        danceEvery: 1.0,
         healthIcon: {
           id: character.healthIcon,
           scale: 1.0,
           flipX: false,
         },
-        healthBarColor: character.healthBarColor,
-        positionOffsets: character.positionOffsets,
+        offsets: character.positionOffsets,
         cameraOffsets: character.cameraOffsets,
         animations: character.animations.map((a) => ({
           name: a.name,
           prefix: a.prefix,
-          fps: a.fps,
+          frameRate: a.fps,
           looped: a.loop,
           frameIndices: a.frameIndices,
           offsets: a.offsets,
@@ -290,22 +294,31 @@ export const PsychVSliceConverterModal: React.FC<PsychVSliceConverterModalProps>
     const { stage, diagnostics } = SchemaParser.parsePsychStage(val, 'custom_stage');
     if (stage) {
       const vStage = {
-        version: '1.0.0',
+        version: '1.0.1',
         name: stage.name,
-        defaultZoom: stage.defaultZoom,
-        isPixel: stage.isPixel,
-        cameraSpeed: stage.cameraSpeed,
+        cameraZoom: stage.defaultZoom,
+        props: stage.layers.map((layer) => ({
+          name: layer.name,
+          assetPath: layer.assetPath.replace(/^images\//i, ''),
+          zIndex: layer.zIndex,
+          position: layer.position,
+          scale: layer.scale,
+          scroll: layer.scrollFactor,
+          isPixel: stage.isPixel,
+        })),
         characters: {
-          boyfriend: {
+          bf: {
+            zIndex: 300,
             position: stage.characters.boyfriend.position,
             cameraOffsets: stage.characters.boyfriend.cameraOffsets,
           },
-          girlfriend: {
+          gf: {
+            zIndex: 100,
             position: stage.characters.girlfriend.position,
             cameraOffsets: stage.characters.girlfriend.cameraOffsets,
-            hidden: stage.characters.girlfriend.hidden,
           },
-          opponent: {
+          dad: {
+            zIndex: 200,
             position: stage.characters.opponent.position,
             cameraOffsets: stage.characters.opponent.cameraOffsets,
           },
@@ -395,14 +408,12 @@ export const PsychVSliceConverterModal: React.FC<PsychVSliceConverterModalProps>
                 V-Slice 0.8.x (Weekend 1 / Modern)
               </button>
               <button
-                onClick={() => setTargetVersion('0.4.x')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                  targetVersion === '0.4.x'
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'bg-slate-800 text-slate-400 hover:text-slate-200'
-                }`}
+                type="button"
+                disabled
+                title="Экспорт V-Slice 0.4.x пока не реализован: сейчас формируются схемы актуальной версии 0.8.x."
+                className="px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-slate-500 border border-slate-800 cursor-not-allowed"
               >
-                V-Slice 0.4.x (Polymod)
+                V-Slice 0.4.x (пока недоступно)
               </button>
             </div>
           </div>
