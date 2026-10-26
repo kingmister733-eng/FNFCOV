@@ -311,6 +311,12 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
       })
     );
 
+    // Add a Lua script; the converter must preserve the original source as well as its review draft.
+    inputZip.file(
+      'scripts/test.lua',
+      "function onCreate()\n  makeLuaSprite('bg', 'stageback', -600, -200)\nend\n"
+    );
+
     // Add a Psych stage definition. Background props must be reviewed separately.
     inputZip.file(
       'stages/teststage.json',
@@ -350,6 +356,10 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(characterJson.offsets).toEqual([0, 0]);
     expect(characterJson.animations[0].frameRate).toBe(24);
     expect(characterJson.animations[0].fps).toBeUndefined();
+
+    expect(outputZip.file('scripts/test.hscript')).not.toBeNull();
+    expect(outputZip.file('CONVERSION_REPORT/psych-source/scripts/test.lua')).not.toBeNull();
+    expect(await outputZip.file('CONVERSION_REPORT/psych-source/scripts/test.lua')!.async('string')).toContain("makeLuaSprite");
 
     expect(outputZip.file('data/stages/teststage.json')).not.toBeNull();
     const stageJson = JSON.parse(await outputZip.file('data/stages/teststage.json')!.async('string'));
