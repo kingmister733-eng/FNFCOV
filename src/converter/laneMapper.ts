@@ -6,7 +6,7 @@
  */
 
 export interface LaneMappingResult {
-  lane: number; // V-Slice target lane index (0..3: Opponent, 4..7: Player, 8..11: Extra/GF)
+  lane: number; // V-Slice target lane index (0..3: Player, 4..7: Opponent, 8..11: Extra/GF)
   direction: 0 | 1 | 2 | 3; // 0=Left, 1=Down, 2=Up, 3=Right
   targetSide: 'opponent' | 'player' | 'extra';
   isThirdStrumline: boolean;
@@ -29,8 +29,8 @@ export interface LaneMappingResult {
  *   - Lanes 8..11: Extra strumline / Girlfriend notes
  *
  * In V-Slice Target Schema (v2.0.0):
- *   - Lanes 0..3: Opponent strumline (0=Left, 1=Down, 2=Up, 3=Right)
- *   - Lanes 4..7: Player / Boyfriend strumline (4=Left, 5=Down, 6=Up, 7=Right)
+ *   - Lanes 0..3: Player strumline (0=Left, 1=Down, 2=Up, 3=Right)
+ *   - Lanes 4..7: Opponent strumline (4=Left, 5=Down, 6=Up, 7=Right)
  *   - Lanes 8..11: Third strumline / Girlfriend (8=Left, 9=Down, 10=Up, 11=Right)
  */
 export function mapPsychLaneToVSlice(sourceLane: number, mustHitSection: boolean): LaneMappingResult {
@@ -44,17 +44,17 @@ export function mapPsychLaneToVSlice(sourceLane: number, mustHitSection: boolean
   // Strumline 1 & 2: Primary lanes (0..7)
   if (sourceLane >= 0 && sourceLane < 4) {
     if (mustHitSection) {
-      // Psych 0..3 in mustHitSection=true is PLAYER
+      // V-Slice encodes player strumline as 0..3.
       return {
-        lane: 4 + direction,
+        lane: direction,
         direction,
         targetSide: 'player',
         isThirdStrumline: false,
       };
     } else {
-      // Psych 0..3 in mustHitSection=false is OPPONENT
+      // V-Slice encodes opponent strumline as 4..7.
       return {
-        lane: direction,
+        lane: 4 + direction,
         direction,
         targetSide: 'opponent',
         isThirdStrumline: false,
@@ -64,17 +64,17 @@ export function mapPsychLaneToVSlice(sourceLane: number, mustHitSection: boolean
 
   if (sourceLane >= 4 && sourceLane < 8) {
     if (mustHitSection) {
-      // Psych 4..7 in mustHitSection=true is OPPONENT
+      // V-Slice encodes opponent strumline as 4..7.
       return {
-        lane: direction,
+        lane: 4 + direction,
         direction,
         targetSide: 'opponent',
         isThirdStrumline: false,
       };
     } else {
-      // Psych 4..7 in mustHitSection=false is PLAYER
+      // V-Slice encodes player strumline as 0..3.
       return {
-        lane: 4 + direction,
+        lane: direction,
         direction,
         targetSide: 'player',
         isThirdStrumline: false,
