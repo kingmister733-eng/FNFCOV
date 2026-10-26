@@ -9,50 +9,34 @@ export interface EventMappingRule {
 }
 
 export const EVENT_REGISTRY: Record<string, EventMappingRule> = {
-  // Only map events whose target IDs and parameter schemas are verified against
-  // the official V-Slice event definitions. Unknown events remain unsupported.
-  'Camera Follow Pos': {
-    targetEvent: 'FocusCamera',
-    supportStatus: 'mapped',
-    description: 'Maps numeric camera coordinates to the official FocusCamera event',
-    transform: (val1, val2) => {
-      const x = Number(val1);
-      const y = Number(val2);
-      if (val1.trim() !== '' && val2.trim() !== '' && Number.isFinite(x) && Number.isFinite(y)) {
-        return { char: -1, x, y };
-      }
-      const isPlayer = val1 === '1' || val1.toLowerCase() === 'bf' || val1.toLowerCase() === 'boyfriend';
-      return { char: isPlayer ? 1 : 0 };
-    },
-  },
+  // This mapping is only called after the Psych target has been recognized.
   'Play Animation': {
     targetEvent: 'PlayAnimation',
     supportStatus: 'mapped',
-    description: 'Maps animation name and character target to official PlayAnimation parameters',
+    description: 'Maps Psych animation name and verified character target to official V-Slice PlayAnimation parameters',
     transform: (val1, val2) => ({
       anim: val1,
-      target: val2 === '0' || val2.toLowerCase() === 'dad' || val2.toLowerCase() === 'opponent'
-        ? 'opponent'
-        : val2.toLowerCase() === 'gf' || val2.toLowerCase() === 'girlfriend'
-          ? 'girlfriend'
-          : 'player',
+      target: val2,
       force: true,
     }),
   },
-  'Hey!': {
-    targetEvent: 'PlayAnimation',
-    supportStatus: 'mapped',
-    description: 'Maps Psych Hey event to official PlayAnimation where a matching hey animation exists',
-    transform: (val1) => ({
-      anim: 'hey',
-      target: val1 === '1' ? 'girlfriend' : 'player',
-      force: true,
-    }),
-  },
+};
+
+function unsupportedEvent(timeMs: number, name: string, val1: string, val2: string): NormalizedEvent {
+  return {
+    timeMs: Math.round(timeMs * 100) / 100,
+    name,
+    parameters: { val1, val2 },
+    rawValues: [val1, val2],
+    supportStatus: 'unsupported',
+  };
 }
 
 /**
- * Resolves a Psych Engine event into a normalized V-Slice event
+ * Resolves a Psych Engine event into a normalized V-Slice event.
+ * Camera Follow Pos is a coordinate event, not a character selector. Empty
+ * coordinates reset Psych's automatic follow and have no verified direct
+ * V-Slice equivalent, so they must not be guessed into a FocusCamera target.
  */
 export function mapPsychEvent(
   timeMs: number,
@@ -60,24 +44,48 @@ export function mapPsychEvent(
   val1: string,
   val2: string
 ): NormalizedEvent {
-  const rule = EVENT_REGISTRY[name];
-  if (rule) {
+  if (name === 'Camera Follow Pos') {
+    const x = Number(val1);
+    const y = Number(val2);
+    if (val1.trim() !== '' && val2.trim() !== '' && Number.isFinite(x) && Number.isFinite(y)) {
+      return {
+        timeMs: Math.round(timeMs * 100) / 100,
+        name: 'FocusCamera',
+        parameters: { char: -1, x, y },
+        rawValues: [val1, val2],
+        supportStatus: 'mapped',
+        vSliceEquivalent: 'FocusCamera',
+      };
+    }
+    return unsupportedEvent(timeMs, name, val1, val2);
+  }
+
+  if (name === 'Play Animation') {
+    const rawTarget = val2.trim().toLowerCase();
+    const target =
+      rawTarget === '0' || rawTarget === 'dad' || rawTarget === 'opponent'
+        ? 'opponent'
+        : rawTarget === '1' || rawTarget === 'bf' || rawTarget === 'boyfriend' || rawTarget === 'player'
+          ? 'player'
+          : rawTarget === '2' || rawTarget === 'gf' || rawTarget === 'girlfriend'
+            ? 'girlfriend'
+            : undefined;
+
+    if (!target) return unsupportedEvent(timeMs, name, val1, val2);
+
+    const rule = EVENT_REGISTRY[name];
     return {
       timeMs: Math.round(timeMs * 100) / 100,
       name: rule.targetEvent,
-      parameters: rule.transform(val1, val2),
+      parameters: rule.transform(val1, target),
       rawValues: [val1, val2],
       supportStatus: rule.supportStatus,
       vSliceEquivalent: rule.targetEvent,
     };
   }
 
-  // Unsupported or custom mod event
-  return {
-    timeMs: Math.round(timeMs * 100) / 100,
-    name: name,
-    parameters: { val1, val2 },
-    rawValues: [val1, val2],
-    supportStatus: 'unsupported',
-  };
+  // Psych's Hey! event may target BF, GF, or both and includes duration
+  // semantics that are not equivalent to a single V-Slice PlayAnimation event.
+  // Keep it unsupported rather than silently dropping half of its behavior.
+  return unsupportedEvent(timeMs, name, val1, val2);
 }
