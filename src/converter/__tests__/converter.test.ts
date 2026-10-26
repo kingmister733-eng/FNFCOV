@@ -48,19 +48,19 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     const notes = song!.notes.normal;
     expect(notes.length).toBe(5);
 
-    // Section 1 (mustHit: false):
-    // 0 -> Opponent lane 0
-    expect(notes[0].lane).toBe(0);
-    // 1 -> Opponent lane 1
-    expect(notes[1].lane).toBe(1);
-    // 4 -> Player lane 4
-    expect(notes[2].lane).toBe(4);
+    // Section 1 (mustHit: false): V-Slice uses 0..3 for player and 4..7 for opponent.
+    // 0 -> Opponent lane 4
+    expect(notes[0].lane).toBe(4);
+    // 1 -> Opponent lane 5
+    expect(notes[1].lane).toBe(5);
+    // 4 -> Player lane 0
+    expect(notes[2].lane).toBe(0);
 
     // Section 2 (mustHit: true):
-    // 0 -> Player lane 4
-    expect(notes[3].lane).toBe(4);
-    // 4 -> Opponent lane 0
-    expect(notes[4].lane).toBe(0);
+    // 0 -> Player lane 0
+    expect(notes[3].lane).toBe(0);
+    // 4 -> Opponent lane 4
+    expect(notes[4].lane).toBe(4);
   });
 
   // Test 2: Song with sustain notes
@@ -584,20 +584,20 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
 
   // Test 19: Exhaustive lane mapping tests for all lanes and both mustHitSection values
   it('19. Exhaustively tests dedicated lane mapping for all indexes 0..11 and out-of-range', () => {
-    // When mustHitSection is false:
-    // 0..3 -> Opponent 0..3 (Left, Down, Up, Right)
-    // 4..7 -> Player 4..7 (Left, Down, Up, Right)
+    // When mustHitSection is false, V-Slice data 0..3 is player and 4..7 is opponent.
+    // 0..3 -> Opponent 4..7 (Left, Down, Up, Right)
+    // 4..7 -> Player 0..3 (Left, Down, Up, Right)
     // 8..11 -> Extra/GF 8..11 (Left, Down, Up, Right)
     for (let i = 0; i < 4; i++) {
       const res = mapPsychLaneToVSlice(i, false);
-      expect(res.lane).toBe(i);
+      expect(res.lane).toBe(4 + i);
       expect(res.direction).toBe(i);
       expect(res.targetSide).toBe('opponent');
       expect(res.isThirdStrumline).toBe(false);
     }
     for (let i = 4; i < 8; i++) {
       const res = mapPsychLaneToVSlice(i, false);
-      expect(res.lane).toBe(i);
+      expect(res.lane).toBe(i % 4);
       expect(res.direction).toBe(i % 4);
       expect(res.targetSide).toBe('player');
       expect(res.isThirdStrumline).toBe(false);
@@ -611,19 +611,19 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     }
 
     // When mustHitSection is true:
-    // 0..3 -> Player 4..7 (Left, Down, Up, Right)
-    // 4..7 -> Opponent 0..3 (Left, Down, Up, Right)
+    // 0..3 -> Player 0..3 (Left, Down, Up, Right)
+    // 4..7 -> Opponent 4..7 (Left, Down, Up, Right)
     // 8..11 -> Extra/GF 8..11 (Left, Down, Up, Right)
     for (let i = 0; i < 4; i++) {
       const res = mapPsychLaneToVSlice(i, true);
-      expect(res.lane).toBe(4 + i);
+      expect(res.lane).toBe(i);
       expect(res.direction).toBe(i);
       expect(res.targetSide).toBe('player');
       expect(res.isThirdStrumline).toBe(false);
     }
     for (let i = 4; i < 8; i++) {
       const res = mapPsychLaneToVSlice(i, true);
-      expect(res.lane).toBe(i - 4);
+      expect(res.lane).toBe(i);
       expect(res.direction).toBe(i % 4);
       expect(res.targetSide).toBe('opponent');
       expect(res.isThirdStrumline).toBe(false);
