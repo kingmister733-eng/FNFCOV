@@ -505,6 +505,30 @@ export class SchemaParser {
       });
     }
 
+    // Note types are engine-specific identifiers. Keep their names, but warn
+    // because a matching V-Slice NoteKind must exist for their behavior to work.
+    const customNoteTypes = Array.from(new Set(uniqueNotes.map((note) => note.noteType).filter((type): type is string => Boolean(type))));
+    if (customNoteTypes.length > 0) {
+      diagnostics.push({
+        level: 'warning',
+        category: 'chart',
+        file: filePath,
+        message: `Psych note types were found: ${customNoteTypes.join(', ')}. Their names are preserved, but Psych note-type behavior is not converted automatically.`,
+        actionNeeded: 'Verify each note kind exists in V-Slice or implement an equivalent V-Slice NoteKind/script.',
+      });
+    }
+
+    const untypedAltNotes = uniqueNotes.filter((note) => note.altAnim && !note.noteType).length;
+    if (untypedAltNotes > 0) {
+      diagnostics.push({
+        level: 'warning',
+        category: 'chart',
+        file: filePath,
+        message: `${untypedAltNotes} note(s) rely on Psych section Alt Animation flags, which have no direct field in the serialized V-Slice chart.`,
+        actionNeeded: 'Map these notes to a verified V-Slice note kind or script before treating the chart as fully converted.',
+      });
+    }
+
     // 4. Embedded Events processing
     const rawEvents: any[] = Array.isArray(songData.events) ? songData.events : [];
     const events: NormalizedEvent[] = rawEvents
@@ -520,6 +544,18 @@ export class SchemaParser {
         });
       })
       .sort((a, b) => a.timeMs - b.timeMs);
+
+    const unsupportedEvents = events.filter((event) => event.supportStatus === 'unsupported');
+    if (unsupportedEvents.length > 0) {
+      const unsupportedNames = Array.from(new Set(unsupportedEvents.map((event) => event.name)));
+      diagnostics.push({
+        level: 'warning',
+        category: 'event',
+        file: filePath,
+        message: `${unsupportedEvents.length} event instance(s) have no verified V-Slice equivalent: ${unsupportedNames.join(', ')}.`,
+        actionNeeded: 'Review the conversion report and implement or replace unsupported events in V-Slice before expecting identical gameplay.',
+      });
+    }
 
     const song: NormalizedSong = {
       id: songId,
@@ -590,6 +626,17 @@ export class SchemaParser {
     }
 
     events.sort((a, b) => a.timeMs - b.timeMs);
+    const unsupportedEvents = events.filter((event) => event.supportStatus === 'unsupported');
+    if (unsupportedEvents.length > 0) {
+      const unsupportedNames = Array.from(new Set(unsupportedEvents.map((event) => event.name)));
+      diagnostics.push({
+        level: 'warning',
+        category: 'event',
+        file: filePath,
+        message: `${unsupportedEvents.length} standalone event instance(s) have no verified V-Slice equivalent: ${unsupportedNames.join(', ')}.`,
+        actionNeeded: 'Review the conversion report and implement or replace unsupported events in V-Slice before expecting identical gameplay.',
+      });
+    }
     diagnostics.push({
       level: 'info',
       category: 'event',
