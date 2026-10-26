@@ -48,19 +48,19 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     const notes = song!.notes.normal;
     expect(notes.length).toBe(5);
 
-    // Section 1 (mustHit: false):
-    // 0 -> Opponent lane 0
-    expect(notes[0].lane).toBe(0);
-    // 1 -> Opponent lane 1
-    expect(notes[1].lane).toBe(1);
-    // 4 -> Player lane 4
-    expect(notes[2].lane).toBe(4);
+    // Section 1 (mustHit: false): V-Slice uses 0..3 for player and 4..7 for opponent.
+    // 0 -> Opponent lane 4
+    expect(notes[0].lane).toBe(4);
+    // 1 -> Opponent lane 5
+    expect(notes[1].lane).toBe(5);
+    // 4 -> Player lane 0
+    expect(notes[2].lane).toBe(0);
 
     // Section 2 (mustHit: true):
-    // 0 -> Player lane 4
-    expect(notes[3].lane).toBe(4);
-    // 4 -> Opponent lane 0
-    expect(notes[4].lane).toBe(0);
+    // 0 -> Player lane 0
+    expect(notes[3].lane).toBe(0);
+    // 4 -> Opponent lane 4
+    expect(notes[4].lane).toBe(4);
   });
 
   // Test 2: Song with sustain notes
@@ -180,7 +180,7 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
         bpm: 140,
         notes: [],
         events: [
-          [1000, [['Camera Follow Pos', '1', '']]],
+          [1000, [['Camera Follow Pos', '120', '80']]],
           [2000, [['Add Camera Zoom', '0.08', '']]],
           [3000, [['Play Animation', 'singUP', 'dad']]],
         ],
@@ -191,13 +191,18 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(song!.events.length).toBe(3);
 
     expect(song!.events[0].name).toBe('FocusCamera');
-    expect(song!.events[0].parameters.char).toBe(1);
+    expect(song!.events[0].parameters).toMatchObject({ char: -1, x: 120, y: 80 });
+    expect(song!.events[0].supportStatus).toBe('mapped');
 
-    expect(song!.events[1].name).toBe('ZoomCamera');
-    expect(song!.events[1].parameters.zoom).toBe(0.08);
+    // ZoomCamera is not a registered official V-Slice event ID; preserve it as unsupported.
+    expect(song!.events[1].name).toBe('Add Camera Zoom');
+    expect(song!.events[1].supportStatus).toBe('unsupported');
+    expect(song!.events[1].rawValues).toEqual(['0.08', '']);
 
     expect(song!.events[2].name).toBe('PlayAnimation');
     expect(song!.events[2].parameters.anim).toBe('singUP');
+    expect(song!.events[2].parameters.target).toBe('dad');
+    expect(song!.events[2].parameters.force).toBe(true);
   });
 
   // Test 7: Custom character with multiple animations
@@ -310,8 +315,8 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     // Verify generated ZIP content structure
     const outputZip = await JSZip.loadAsync(result.zipBlob!);
     expect(outputZip.file('_polymod_meta.json')).not.toBeNull();
-    expect(outputZip.file('data/songs/bopeebo/bopeebo-chart.json')).not.toBeNull();
-    expect(outputZip.file('data/songs/bopeebo/bopeebo-metadata.json')).not.toBeNull();
+    expect(outputZip.file('songs/bopeebo/bopeebo-chart.json')).not.toBeNull();
+    expect(outputZip.file('songs/bopeebo/bopeebo-metadata.json')).not.toBeNull();
     expect(outputZip.file('data/characters/bf.json')).not.toBeNull();
     expect(outputZip.file('CONVERSION_REPORT.md')).not.toBeNull();
   });
@@ -562,39 +567,42 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(polymodMeta.title).toBe('BopeeboTest');
 
     // Chart schema
-    expect(outputFiles.has('data/songs/bopeebo/bopeebo-chart.json')).toBe(true);
-    const chart = JSON.parse(outputFiles.get('data/songs/bopeebo/bopeebo-chart.json')!.text!);
+    expect(outputFiles.has('songs/bopeebo/bopeebo-chart.json')).toBe(true);
+    const chart = JSON.parse(outputFiles.get('songs/bopeebo/bopeebo-chart.json')!.text!);
     expect(chart.version).toBe('2.0.0');
     expect(chart.scrollSpeed).toHaveProperty('default');
     expect(chart.notes).toHaveProperty('normal');
     expect(chart.events).toBeInstanceOf(Array);
 
     // Metadata schema
-    expect(outputFiles.has('data/songs/bopeebo/bopeebo-metadata.json')).toBe(true);
-    const meta = JSON.parse(outputFiles.get('data/songs/bopeebo/bopeebo-metadata.json')!.text!);
+    expect(outputFiles.has('songs/bopeebo/bopeebo-metadata.json')).toBe(true);
+    const meta = JSON.parse(outputFiles.get('songs/bopeebo/bopeebo-metadata.json')!.text!);
     expect(meta.version).toBe('2.2.4');
     expect(meta.songName).toBe('Bopeebo');
     expect(meta.playData.characters.player).toBe('bf');
     expect(meta.playData.stage).toBe('stage');
     expect(meta.timeChanges[0].bpm).toBe(100);
+    expect(meta.generatedBy).toBe('FNFCOV Psych-to-V-Slice Mod Converter');
+    expect(meta.offsets.instrumental).toBe(0);
+    expect(meta.playData.songVariations).toEqual([]);
   });
 
   // Test 19: Exhaustive lane mapping tests for all lanes and both mustHitSection values
   it('19. Exhaustively tests dedicated lane mapping for all indexes 0..11 and out-of-range', () => {
-    // When mustHitSection is false:
-    // 0..3 -> Opponent 0..3 (Left, Down, Up, Right)
-    // 4..7 -> Player 4..7 (Left, Down, Up, Right)
+    // When mustHitSection is false, V-Slice data 0..3 is player and 4..7 is opponent.
+    // 0..3 -> Opponent 4..7 (Left, Down, Up, Right)
+    // 4..7 -> Player 0..3 (Left, Down, Up, Right)
     // 8..11 -> Extra/GF 8..11 (Left, Down, Up, Right)
     for (let i = 0; i < 4; i++) {
       const res = mapPsychLaneToVSlice(i, false);
-      expect(res.lane).toBe(i);
+      expect(res.lane).toBe(4 + i);
       expect(res.direction).toBe(i);
       expect(res.targetSide).toBe('opponent');
       expect(res.isThirdStrumline).toBe(false);
     }
     for (let i = 4; i < 8; i++) {
       const res = mapPsychLaneToVSlice(i, false);
-      expect(res.lane).toBe(i);
+      expect(res.lane).toBe(i % 4);
       expect(res.direction).toBe(i % 4);
       expect(res.targetSide).toBe('player');
       expect(res.isThirdStrumline).toBe(false);
@@ -608,19 +616,19 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     }
 
     // When mustHitSection is true:
-    // 0..3 -> Player 4..7 (Left, Down, Up, Right)
-    // 4..7 -> Opponent 0..3 (Left, Down, Up, Right)
+    // 0..3 -> Player 0..3 (Left, Down, Up, Right)
+    // 4..7 -> Opponent 4..7 (Left, Down, Up, Right)
     // 8..11 -> Extra/GF 8..11 (Left, Down, Up, Right)
     for (let i = 0; i < 4; i++) {
       const res = mapPsychLaneToVSlice(i, true);
-      expect(res.lane).toBe(4 + i);
+      expect(res.lane).toBe(i);
       expect(res.direction).toBe(i);
       expect(res.targetSide).toBe('player');
       expect(res.isThirdStrumline).toBe(false);
     }
     for (let i = 4; i < 8; i++) {
       const res = mapPsychLaneToVSlice(i, true);
-      expect(res.lane).toBe(i - 4);
+      expect(res.lane).toBe(i);
       expect(res.direction).toBe(i % 4);
       expect(res.targetSide).toBe('opponent');
       expect(res.isThirdStrumline).toBe(false);
@@ -821,4 +829,24 @@ describe('Psych Engine ➔ V-Slice Conversion Suite', () => {
     expect(result.diagnostics.some((d) => d.message.includes('Standalone songpack detected'))).toBe(true);
     expect(result.diagnostics.some((d) => d.message.includes('default V-Slice stage'))).toBe(true);
   });
+  // Test 24: JSON assets under data/ are not all charts
+  it('24. Preserves non-chart JSON inside a song data folder without parsing it as a song', async () => {
+    const pack = new JSZip();
+    pack.file('data/test-song/test-song.json', JSON.stringify({
+      song: { song: 'test-song', bpm: 120, notes: [{ sectionNotes: [], mustHitSection: true }] },
+    }));
+    pack.file('data/test-song/metadata-custom.json', JSON.stringify({
+      title: 'Custom metadata',
+      credits: ['artist'],
+    }));
+
+    const buffer = await pack.generateAsync({ type: 'uint8array' });
+    const result = await ModConverter.convertPsychModZip(buffer, 'JsonClassificationTest.zip', '0.8.x');
+    const { files: outputFiles } = await SafeZip.unpackZip(result.zipBlob!);
+
+    expect(result.stats.songsCount).toBe(1);
+    expect(outputFiles.has('data/test-song/metadata-custom.json')).toBe(true);
+    expect(JSON.parse(outputFiles.get('data/test-song/metadata-custom.json')!.text!).title).toBe('Custom metadata');
+  });
+
 });

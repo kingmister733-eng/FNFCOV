@@ -187,7 +187,24 @@ export class ModConverter {
           }
         }
 
-        if (isChart || lower.includes('data/') || lower.includes('songs/')) {
+        // Do not classify every JSON below data/ or songs/ as a chart: mods also
+        // store metadata, dialogue, character configs and other JSON in those trees.
+        // Use chart-shaped content first, then a conservative legacy chart filename
+        // rule for malformed/older charts so they still reach the parser diagnostics.
+        const normalizedPath = path.replace(/\\/g, '/');
+        const pathParts = normalizedPath.split('/').filter(Boolean);
+        const fileStem = lowerFileName.replace(/\.json$/i, '');
+        const dataIndex = pathParts.findIndex((part) => ['data', 'songs'].includes(part.toLowerCase()));
+        let legacyChartPath = false;
+        if (dataIndex >= 0 && pathParts[dataIndex + 1] && pathParts[dataIndex + 2]) {
+          const songDir = pathParts[dataIndex + 1].toLowerCase();
+          const difficultyNames = new Set(['easy', 'normal', 'hard', 'erect', 'nightmare', 'pico', 'bf', 'alt']);
+          legacyChartPath =
+            fileStem === songDir ||
+            difficultyNames.has(fileStem) ||
+            (fileStem.startsWith(songDir + '-') && difficultyNames.has(fileStem.slice(songDir.length + 1)));
+        }
+        if (isChart || legacyChartPath) {
           chartEntries.push({ path, file });
         } else {
           fileManifest.push({
