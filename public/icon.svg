@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#0f172a" />
+      <stop offset="50%" stopColor="#1e1b4b" />
+      <stop offset="100%" stopColor="#090d16" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#ec4899" />
+      <stop offset="50%" stopColor="#a855f7" />
+      <stop offset="100%" stopColor="#06b6d4" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background with rounded squircles -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)" stroke="#3b82f6" stroke-width="8" stroke-opacity="0.3" />
+
+  <!-- Diagonal arrows pattern -->
+  <!-- Left (Purple) -->
+  <polygon points="120,256 160,210 160,240 210,240 210,272 160,272 160,302" fill="#c026d3" filter="url(#glow)" />
+  <!-- Down (Cyan) -->
+  <polygon points="256,392 210,352 240,352 240,302 272,302 272,352 302,352" fill="#06b6d4" filter="url(#glow)" />
+  <!-- Up (Green) -->
+  <polygon points="256,120 210,160 240,160 240,210 272,210 272,160 302,160" fill="#22c55e" filter="url(#glow)" />
+  <!-- Right (Red) -->
+  <polygon points="392,256 352,210 352,240 302,240 302,272 352,272 352,302" fill="#ef4444" filter="url(#glow)" />
+
+  <!-- Center Converter Disc -->
+  <circle cx="256" cy="256" r="80" fill="#0f172a" stroke="url(#accent)" stroke-width="8" filter="url(#glow)" />
+
+  <!-- Microphone Icon in center -->
+  <g transform="translate(256, 256) scale(0.9) translate(-24, -24)">
+    <rect x="14" y="2" width="20" height="28" rx="10" fill="url(#accent)" />
+    <path d="M6 18c0 9.9 8.1 18 18 18s18-8.1 18-18" fill="none" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" />
+    <line x1="24" y1="36" x2="24" y2="44" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" />
+    <line x1="16" y1="44" x2="32" y2="44" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" />
+  </g>
+
+  <!-- Tag FNF COV -->
+  <text x="256" y="468" text-anchor="middle" font-family="'Press Start 2P', monospace, sans-serif" font-size="28" font-weight="900" fill="#f43f5e" letter-spacing="4">FNF CONV</text>
+</svg>
