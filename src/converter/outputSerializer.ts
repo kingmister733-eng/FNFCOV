@@ -113,6 +113,7 @@ export class OutputSerializer {
         songName: song.name,
         artist: song.artist,
         charter: song.charter,
+        generatedBy: 'FNFCOV Psych-to-V-Slice Mod Converter',
         divisions: 16,
         looped: false,
         playData: {
