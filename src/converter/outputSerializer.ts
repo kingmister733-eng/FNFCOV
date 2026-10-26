@@ -126,9 +126,19 @@ export class OutputSerializer {
           noteStyle: 'funkin',
           ratings: {},
           difficulties: song.difficulties.length > 0 ? song.difficulties : ['easy', 'normal', 'hard'],
+          songVariations: [],
+          previewStart: 0,
+          previewEnd: 15000,
+        },
+        offsets: {
+          instrumental: 0,
+          altInstrumentals: {},
+          vocals: {},
+          altVocals: {},
         },
         timeChanges,
         timeFormat: 'ms',
+        generatedBy: 'FNFCOV Psych-to-V-Slice Mod Converter',
       };
 
       files.push({
