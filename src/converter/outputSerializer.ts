@@ -187,7 +187,7 @@ export class OutputSerializer {
         cameraZoom: stage.defaultZoom,
         props: stage.layers.map((layer) => ({
           name: layer.name,
-          assetPath: layer.assetPath.replace(/^images\\//i, ''),
+          assetPath: layer.assetPath.replace(/^images\//i, ''),
           zIndex: layer.zIndex,
           position: layer.position,
           scale: layer.scale,
